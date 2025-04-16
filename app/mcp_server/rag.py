@@ -1,10 +1,10 @@
 from fastmcp import FastMCP
 import bm25s
-# import Stemmer
-# from langchain_text_splitters import TokenTextSplitter
+import Stemmer
+from langchain_text_splitters import TokenTextSplitter
 
-# text_splitter = TokenTextSplitter(chunk_size=512, chunk_overlap=50)
-# stemmer = Stemmer.Stemmer("english")
+text_splitter = TokenTextSplitter(chunk_size=512, chunk_overlap=50)
+stemmer = Stemmer.Stemmer("english")
 mcp = FastMCP("test")
 
 @mcp.tool()
@@ -12,6 +12,9 @@ async def save(
     corpus: str,
     db_name: str
 ):
+    """
+    
+    """
     if not corpus:
         raise ValueError("corpus is required")
     
