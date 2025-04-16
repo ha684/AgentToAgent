@@ -1,0 +1,5 @@
+*.pyc
+.env
+ncc_comp/corpus.jsonl
+/ncc_comp
+/ncc_data
