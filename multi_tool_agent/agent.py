@@ -3,7 +3,8 @@ from zoneinfo import ZoneInfo
 from google.adk.agents import Agent
 from app.mcp_server.rag import save, search
 from multi_tool_agent.prompt import DEFAULT_AGENT_PROMPT
-
+from google.adk.agents.parallel_agent import ParallelAgent
+from google.adk.tools.built_in_code_execution import built_in_code_execution
 root_agent = Agent(
     name="bm25s_agent",
     model="gemini-2.0-flash",
