@@ -1,12 +1,20 @@
-import datetime
-import asyncio
-from zoneinfo import ZoneInfo
-from google.adk.agents import Agent
-from multi_tool_agent.prompt import DEFAULT_AGENT_PROMPT
-from google.adk.agents.parallel_agent import ParallelAgent
 from google.adk.tools.mcp_tool.mcp_toolset import MCPToolset, SseServerParams
 from contextlib import AsyncExitStack
-from app.mcp_svr.mcp_tools import save_data_to_db_from_url, search_from_bm25db_using_user_query, search_from_tavily_using_user_query
+import json
+import random
+
+from typing import Any, Optional
+
+from google.adk.agents.llm_agent import LlmAgent
+from google.adk.artifacts import InMemoryArtifactService
+from google.adk.memory.in_memory_memory_service import InMemoryMemoryService
+from google.adk.runners import Runner
+from google.adk.sessions import InMemorySessionService
+from google.adk.tools.tool_context import ToolContext
+from task_manager import AgentWithTaskManager
+from app.utils.prompt import DEFAULT_RETRIEVE_AGENT_PROMPT
+
+request_ids = set()
 
 async def save_data_to_db_from_url_function(
     url: str,
@@ -140,24 +148,38 @@ async def search_from_tavily_using_user_query_function(
     await exit_stack.aclose()
     return result.content[0].text
 
-root_agent = Agent(
-    name="root_agent",
-    model="gemini-2.0-flash",
-    instruction=DEFAULT_AGENT_PROMPT,   
-    tools=[
-        search_from_tavily_using_user_query_function, 
-        search_from_bm25db_using_user_query_function, 
-        save_data_to_db_from_url_function
-    ],
-    # tools=[
-    #     search_from_tavily_using_user_query,
-    #     search_from_bm25db_using_user_query,
-    #     save_data_to_db_from_url
-    # ]
-)
+class RetrieveAgent(AgentWithTaskManager):
+    """An agent that handles trip requests."""
 
-async def main():
-    result = await search_from_tavily_using_user_query_function("What is the capital of France?", 1, "basic", 7)
+    SUPPORTED_CONTENT_TYPES = ['text', 'text/plain']
 
-if __name__ == "__main__":
-    asyncio.run(main())
+    def __init__(self):
+        self._agent = self._build_agent()
+        self._user_id = 'remote_agent'
+        self._runner = Runner(
+            app_name=self._agent.name,
+            agent=self._agent,
+            artifact_service=InMemoryArtifactService(),
+            session_service=InMemorySessionService(),
+            memory_service=InMemoryMemoryService(),
+        )
+
+    def get_processing_message(self) -> str:
+        return 'Processing the trip request...'
+
+    def _build_agent(self) -> LlmAgent:
+        """Builds the LLM agent for the trip agent."""
+        return LlmAgent(
+            model='gemini-2.0-flash-001',
+            name='trip_agent',
+            description=(
+                'This agent handles the trip planning process for the employees'
+                ' given the destination, start date, end date, origin, interests, budget level, number of guests, class preference, and hotel rating minimum.'
+            ),
+            instruction=DEFAULT_RETRIEVE_AGENT_PROMPT,
+            tools=[
+                save_data_to_db_from_url_function,
+                search_from_bm25db_using_user_query_function,
+                search_from_tavily_using_user_query_function,
+            ],
+        )

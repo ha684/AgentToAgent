@@ -1,4 +1,4 @@
 fastapi
 google-adk
 pgvector
-
+crawl4ai
