@@ -4,3 +4,4 @@ ncc_comp/corpus.jsonl
 /ncc_comp
 /ncc_data
 app/
+test/
