@@ -26,8 +26,30 @@ async def plan_trip_function(
     num_guests: int,
     class_preference: str,
     hotel_rating_min: int,
+    initial_query: str
 ):
-    """
+    """Intelligently searching for travel information.
+    
+    This tool performs multiple intelligent searches guided by an LLM to gather comprehensive
+    travel information.
+    
+    Args:
+        destination: The primary travel destination (e.g., "Paris", "Japan", "Yellowstone National Park")
+        start_date: Trip start date in YYYY-MM-DD format (e.g., "2025-06-15")
+        end_date: Trip end date in YYYY-MM-DD format (e.g., "2025-06-25")
+        origin: Departure city or location (e.g., "New York", "London")
+        interests: Traveler's interests or preferences, comma-separated (e.g., "hiking, museums, local cuisine, photography")
+        budget_level: Budget category (e.g., "budget", "mid-range", "luxury")
+        num_guests: Number of travelers (e.g., 2, 4)
+        class_preference: Flight class preference (e.g., "economy", "business", "first")
+        hotel_rating_min: Minimum hotel rating, 1-5 stars (e.g., 3, 4)
+        initial_query: Free-form initial travel request if specific parameters aren't known
+                    (e.g., "Planning a beach vacation for a family of 4 in December")
+    
+    Returns:
+        Dict containing:
+            - status: "complete" if finished successfully, "incomplete" if max iterations reached
+            - search_results: List of all search results gathered
     """
     common_exit_stack = AsyncExitStack()
 
@@ -48,6 +70,7 @@ async def plan_trip_function(
             "num_guests": num_guests,
             "class_preference": class_preference,
             "hotel_rating_min": hotel_rating_min,
+            "initial_query": initial_query,
         },
         tool_context=None,
     )
@@ -76,7 +99,7 @@ class TripAgent(AgentWithTaskManager):
     def _build_agent(self) -> LlmAgent:
         """Builds the LLM agent for the trip agent."""
         return LlmAgent(
-            model='gemini-2.0-flash-001',
+            model='gemini-2.0-flash',
             name='trip_agent',
             description=(
                 'This agent handles the trip planning process for the employees'

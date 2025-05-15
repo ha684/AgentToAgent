@@ -5,7 +5,7 @@ import os
 
 import click
 
-from agent import ReimbursementAgent
+from trip_agent.agent import TripAgent
 from common.server import A2AServer
 from common.types import (
     AgentCapabilities,
@@ -32,28 +32,33 @@ def main(host, port):
                 )
 
         capabilities = AgentCapabilities(streaming=True)
+        
         skill = AgentSkill(
-            id='process_reimbursement',
-            name='Process Reimbursement Tool',
-            description='Helps with the reimbursement process for users given the amount and purpose of the reimbursement.',
-            tags=['reimbursement'],
+            id='Trip planning',
+            name='Trip Planning Expert',
+            description='Comprehensive travel planning assistant that creates personalized itineraries based on your preferences. Provides customized recommendations for destinations, accommodations, activities, and transportation while respecting your budget, interests, and travel style.',
+            tags=['trip planning', 'travel', 'vacation', 'itinerary', 'tourism'],
             examples=[
-                'Can you reimburse me $20 for my lunch with the clients?'
+                'I want to plan a vacation to Japan next spring',
+                'Help me plan a business trip to London for next month',
+                'Can you suggest a family-friendly itinerary for Hawaii?',
             ],
         )
+
         agent_card = AgentCard(
-            name='Reimbursement Agent',
-            description='This agent handles the reimbursement process for the employees given the amount and purpose of the reimbursement.',
+            name='Trip Planning Expert',
+            description='Personal travel consultant that creates customized trip plans with detailed itineraries, accommodation and flight recommendations, activity suggestions, and budget considerations. Perfect for vacation planning, business travel, family trips, and specialized travel experiences.',
             url=f'http://{host}:{port}/',
             version='1.0.0',
-            defaultInputModes=ReimbursementAgent.SUPPORTED_CONTENT_TYPES,
-            defaultOutputModes=ReimbursementAgent.SUPPORTED_CONTENT_TYPES,
+            defaultInputModes=TripAgent.SUPPORTED_CONTENT_TYPES,
+            defaultOutputModes=TripAgent.SUPPORTED_CONTENT_TYPES,
             capabilities=capabilities,
             skills=[skill],
         )
+        
         server = A2AServer(
             agent_card=agent_card,
-            task_manager=AgentTaskManager(agent=ReimbursementAgent()),
+            task_manager=AgentTaskManager(agent=TripAgent()),
             host=host,
             port=port,
         )

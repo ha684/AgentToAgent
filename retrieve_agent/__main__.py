@@ -5,7 +5,7 @@ import os
 
 import click
 
-from agent import ReimbursementAgent
+from retrieve_agent.agent import RetrieveAgent
 from common.server import A2AServer
 from common.types import (
     AgentCapabilities,
@@ -22,7 +22,7 @@ load_dotenv()
 
 @click.command()
 @click.option('--host', default='localhost')
-@click.option('--port', default=10002)
+@click.option('--port', default=10003)
 def main(host, port):
     try:
         if not os.getenv('GOOGLE_GENAI_USE_VERTEXAI') == 'TRUE':
@@ -33,27 +33,27 @@ def main(host, port):
 
         capabilities = AgentCapabilities(streaming=True)
         skill = AgentSkill(
-            id='process_reimbursement',
-            name='Process Reimbursement Tool',
-            description='Helps with the reimbursement process for users given the amount and purpose of the reimbursement.',
-            tags=['reimbursement'],
+            id='retrieve_information',
+            name='Retrieve Information Tool',
+            description='Helps with the retrieval of information from the database or the internet given the user query. It can also help in crawling data from a URL then save to database.',
+            tags=['retrieve'],
             examples=[
-                'Can you reimburse me $20 for my lunch with the clients?'
+                'Can you help me find the best places to visit in Tokyo?'
             ],
         )
         agent_card = AgentCard(
-            name='Reimbursement Agent',
-            description='This agent handles the reimbursement process for the employees given the amount and purpose of the reimbursement.',
+            name='Retrieve Agent',
+            description='This agent handles the retrieval of information from the database or the internet given the user query. It can also help in crawling data from a URL then save to database.',
             url=f'http://{host}:{port}/',
             version='1.0.0',
-            defaultInputModes=ReimbursementAgent.SUPPORTED_CONTENT_TYPES,
-            defaultOutputModes=ReimbursementAgent.SUPPORTED_CONTENT_TYPES,
+            defaultInputModes=RetrieveAgent.SUPPORTED_CONTENT_TYPES,
+            defaultOutputModes=RetrieveAgent.SUPPORTED_CONTENT_TYPES,
             capabilities=capabilities,
             skills=[skill],
         )
         server = A2AServer(
             agent_card=agent_card,
-            task_manager=AgentTaskManager(agent=ReimbursementAgent()),
+            task_manager=AgentTaskManager(agent=RetrieveAgent()),
             host=host,
             port=port,
         )
